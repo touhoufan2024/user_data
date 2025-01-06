@@ -156,6 +156,11 @@ strategy里配置的 参数
 
 
 
+user_data/hyperopts 目录下 存放 的 是 loss函数
+
+
+freqtrade hyperopt --hyperopt-loss ShortTradeDurHyperOptLoss --strategy MyAwesomeStrategy -e 500 --spaces all
+
 
 
 
