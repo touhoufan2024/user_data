@@ -163,7 +163,14 @@ freqtrade hyperopt --hyperopt-loss ShortTradeDurHyperOptLoss --strategy MyAwesom
 
 
 
+实例的 hyperopt
+https://botacademy.ddns.net/2023/07/09/quick-freqtrade-tutorial-for-beginners/
 
+
+freqtrade backtesting --strategy SMAOffsetProtectOptV1 --timeframe 5m --timerange=20240101-  -p BTC/USDT:USDT
+
+
+freqtrade hyperopt --hyperopt-loss SharpeHyperOptLoss --spaces buy sell --strategy SMAOffsetProtectOptV1 --epochs 10 --timerange=20240101- --disable-param-export
 
 
 
