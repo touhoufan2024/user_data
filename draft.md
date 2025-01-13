@@ -191,10 +191,22 @@ hyperopt 的方法
 
 
 
+合约 杠杆 交易
+https://www.freqtrade.io/en/stable/leverage/
 
+在 config.json 写入
 
+"trading_mode": "futures",
+"margin_mode": "isolated",  目前仅支持 逐仓
 
+在策略里写入
 
+can_short = True
+
+关于 杠杆
+通过 class 里的 leverage 的返回值 来决定, 可以 根据 不同的 pair 使用 不同的杠杆
+
+https://www.freqtrade.io/en/stable/strategy-callbacks/#leverage-callback
 
 
 
