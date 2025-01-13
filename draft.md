@@ -168,9 +168,37 @@ https://botacademy.ddns.net/2023/07/09/quick-freqtrade-tutorial-for-beginners/
 
 
 freqtrade backtesting --strategy SMAOffsetProtectOptV1 --timeframe 5m --timerange=20240101-  -p BTC/USDT:USDT
-
+freqtrade backtesting --strategy raindow --timeframe 5m --timerange=20240101-
 
 freqtrade hyperopt --hyperopt-loss SharpeHyperOptLoss --spaces buy sell --strategy SMAOffsetProtectOptV1 --epochs 10 --timerange=20240101- --disable-param-export
+
+
+hyperopt 的方法
+目的 是 计算 loss, 使得 loss 距离 预期值 最小
+选择一个 loss 函数, loss 函数 是 计算 loss 的方法, hyperopt 的 过程 就是 找到一组 参数, 使得 loss 最小
+
+先把 彩虹图 完全 实现 完成, 或者 去看 multi ma 策略?
+
+
+### multi ma 策略:
+这个 策略 太老了, 目前版本 无法 运行, 要去 看一下 他的 逻辑
+
+
+ 
+
+
+搞一个 脚本, 来 自动 运行 各种 命令. 
+
+
+
+
+
+
+
+
+
+
+
 
 
 
