@@ -37,8 +37,8 @@
         "key": "",
         "secret": "",
         "ccxt_config": {
-            "httpsProxy": "http://127.0.0.1:2080",
-            "wsProxy": "http://127.0.0.1:2080"
+            "httpsProxy": "http://127.0.0.1:10808",
+            "wsProxy": "http://127.0.0.1:10808"
          },
         "ccxt_async_config": {},
         "pair_whitelist": [
