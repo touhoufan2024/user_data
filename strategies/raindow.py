@@ -40,7 +40,7 @@ from technical import qtpylib
 class raindow(IStrategy):
     INTERFACE_VERSION = 3
 
-    timeframe = "5m"
+    timeframe = "15m"
 
     # Can this strategy go short?
     can_short: bool = False
@@ -78,6 +78,18 @@ class raindow(IStrategy):
 
     raindow_length = IntParameter(1, 999, default=200, space="raindow")
 
+    # raindow lines
+    x1 = DecimalParameter(0.1, 10, default=12, space="raindow")
+    x2 = DecimalParameter(0.1, 10, default=8.5, space="raindow")
+    x3 = DecimalParameter(0.1, 10, default=6.8, space="raindow")
+    x4 = DecimalParameter(0.1, 10, default=5, space="raindow")
+    x5 = DecimalParameter(0.1, 10, default=0, space="raindow")
+    x6 = DecimalParameter(0.1, 10, default=-5, space="raindow")
+    x7 = DecimalParameter(0.1, 10, default=-6.8, space="raindow")
+    x8 = DecimalParameter(0.1, 10, default=-8.5, space="raindow")
+    x9 = DecimalParameter(0.1, 10, default=-12, space="raindow")
+
+
     order_types = {
         "entry": "limit",
         "exit": "limit",
@@ -96,17 +108,16 @@ class raindow(IStrategy):
             # Main plot indicators (Moving averages, ...)
             "main_plot": {
                 # "tema": {},
-                # "raindow_ma": {"color": '#d5de2f'},
                 # "hlc3_ma": {"color": "red"},
                 # "tr_ma": {"color": "blue"}
-                "line1": {"color": "red"},
-                "line2": {"color": "red"},
-                "line3": {"color": "red"},
-                "line4": {"color": "red"},
-                "line5": {"color": "yellow"},
-                "line6": {"color": "red"},
-                "line7": {"color": "red"},
-                "line8": {"color": "red"},
+                "line1": {"color": "orange"},
+                "line2": {"color": "yellow"},
+                "line3": {"color": "lightgreen"},
+                "line4": {"color": "lightblue"},
+                "line5": {"color": "darkblue"},
+                "line6": {"color": "mediumpurple"},
+                "line7": {"color": "teal"},
+                "line8": {"color": "lightpink"},
                 "line9": {"color": "red"},
             },
             "subplots": {
@@ -162,8 +173,6 @@ class raindow(IStrategy):
         """
 
         # raindow
-        dataframe["raindow_ma"] = ta.WMA(dataframe, timeperiod= self.raindow_length.value)
-        
         dataframe["hlc3"] = ((dataframe["high"] + dataframe["low"] + dataframe["close"]) / 3).astype(float)
         dataframe["hlc3_ma"] = ta.WMA(dataframe["hlc3"], timeperiod= self.raindow_length.value)
 
@@ -173,17 +182,23 @@ class raindow(IStrategy):
         dataframe["high_ma"] = ta.WMA(dataframe["high"], timeperiod= self.raindow_length.value)
         dataframe["low_ma"] = ta.WMA(dataframe["low"], timeperiod= self.raindow_length.value)
 
-        dataframe['line1'] = dataframe["low_ma"] + 10 * dataframe["tr_ma"]
-        dataframe['line2'] = dataframe["low_ma"] + 7.3 * dataframe["tr_ma"]
-        dataframe['line3'] = dataframe["low_ma"] + 5 * dataframe["tr_ma"]
-        dataframe['line4'] = dataframe["low_ma"] + 3.65 * dataframe["tr_ma"]
+        dataframe['line1'] = dataframe["low_ma"] + self.x1.value * dataframe["tr_ma"]
+        dataframe['line2'] = dataframe["low_ma"] + self.x2.value * dataframe["tr_ma"]
+        dataframe['line3'] = dataframe["low_ma"] + self.x3.value * dataframe["tr_ma"]
+        dataframe['line4'] = dataframe["low_ma"] + self.x4.value * dataframe["tr_ma"]
         dataframe["line5"] = dataframe["hlc3_ma"]
-        dataframe['line6'] = dataframe["high_ma"] + (-3.65) * dataframe["tr_ma"]
-        dataframe['line7'] = dataframe["high_ma"] + (-5) * dataframe["tr_ma"]
-        dataframe['line8'] = dataframe["high_ma"] + (-7.3) * dataframe["tr_ma"]
-        dataframe['line9'] = dataframe["high_ma"] + (-10) * dataframe["tr_ma"]
+        dataframe['line6'] = dataframe["high_ma"] + self.x6.value * dataframe["tr_ma"]
+        dataframe['line7'] = dataframe["high_ma"] + self.x7.value * dataframe["tr_ma"]
+        dataframe['line8'] = dataframe["high_ma"] + self.x8.value * dataframe["tr_ma"]
+        dataframe['line9'] = dataframe["high_ma"] + self.x9.value * dataframe["tr_ma"]
 
         return dataframe
+
+    # 开多  下穿 6 7 8 9
+    # 开空 上穿  4 3 2 1
+    # 离场 分批离场, 每批25%
+    # 平空 下穿 5 6 7 8
+    # 平多 上穿 5 4 3 2
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         """
@@ -192,38 +207,30 @@ class raindow(IStrategy):
         :param metadata: Additional information, like the currently traded pair
         :return: DataFrame with entry columns populated
         """
-        # dataframe.loc[
-        #     (
-        #         (qtpylib.crossed_above(dataframe["rsi"], self.buy_rsi.value)) &  # Signal: RSI crosses above buy_rsi
-        #         (dataframe["tema"] <= dataframe["bb_middleband"]) &  # Guard: tema below BB middle
-        #         (dataframe["tema"] > dataframe["tema"].shift(1)) &  # Guard: tema is raising
-        #         (dataframe["volume"] > 0)  # Make sure Volume is not 0
-        #     ),
-        #     "enter_long"] = 1
+
+        longEntryCondition = (
+            (qtpylib.crossed_below(dataframe["low"],dataframe["line6"])) &
+            (qtpylib.crossed_below(dataframe["low"],dataframe["line7"])) &
+            (qtpylib.crossed_below(dataframe["low"],dataframe["line8"])) &
+            (qtpylib.crossed_below(dataframe["low"],dataframe["line9"])) &
+            (dataframe["volume"] > 0)  # Make sure Volume is not 0
+        )
+
+        shortEntryCondition = (
+            (qtpylib.crossed_above(dataframe["high"],dataframe["line4"])) &
+            (qtpylib.crossed_above(dataframe["high"],dataframe["line3"])) &
+            (qtpylib.crossed_above(dataframe["high"],dataframe["line2"])) &
+            (qtpylib.crossed_above(dataframe["high"],dataframe["line1"])) &
+            (dataframe["volume"] > 0)  # Make sure Volume is not 0
+        )
+
 
         dataframe.loc[
-            (
-                    (qtpylib.crossed_below(dataframe["low"],dataframe["line9"])) &  # below line9, and entry long
-                    (dataframe["volume"] > 0)  # Make sure Volume is not 0
-            ),
-            ["enter_long", "enter_tag"]] = (1, "long9")
+            longEntryCondition,
+            ["enter_long", "enter_tag"]] = (1, "long")
         dataframe.loc[
-            (
-                    (qtpylib.crossed_above(dataframe["high"],dataframe["line1"])) &  # below line9, and entry long
-                    (dataframe["volume"] > 0)  # Make sure Volume is not 0
-            ),
-            ["enter_exit", "enter_tag"]] = (1, "short1")
-        # Uncomment to use shorts (Only used in futures/margin mode. Check the documentation for more info)
-        """
-        dataframe.loc[
-            (
-                (qtpylib.crossed_above(dataframe["rsi"], self.sell_rsi.value)) &  # Signal: RSI crosses above sell_rsi
-                (dataframe["tema"] > dataframe["bb_middleband"]) &  # Guard: tema above BB middle
-                (dataframe["tema"] < dataframe["tema"].shift(1)) &  # Guard: tema is falling
-                (dataframe['volume'] > 0)  # Make sure Volume is not 0
-            ),
-            'enter_short'] = 1
-        """
+            shortEntryCondition,
+            ["enter_short", "enter_tag"]] = (1, "short")
 
         return dataframe
 
@@ -234,38 +241,53 @@ class raindow(IStrategy):
         :param metadata: Additional information, like the currently traded pair
         :return: DataFrame with exit columns populated
         """
-        # dataframe.loc[
-        #     (
-        #         (qtpylib.crossed_above(dataframe["rsi"], self.sell_rsi.value)) &  # Signal: RSI crosses above sell_rsi
-        #         (dataframe["tema"] > dataframe["bb_middleband"]) &  # Guard: tema above BB middle
-        #         (dataframe["tema"] < dataframe["tema"].shift(1)) &  # Guard: tema is falling
-        #         (dataframe["volume"] > 0)  # Make sure Volume is not 0
-        #     ),
-        #     "exit_long"] = 1
+        cond5 = (
+            (qtpylib.crossed_above(dataframe["high"],dataframe["line5"])) &
+            (qtpylib.crossed_below(dataframe["low"],dataframe["line5"])) &
+            (dataframe["volume"] > 0)  # Make sure Volume is not 0
+        )
 
         dataframe.loc[
-            (
-                    (qtpylib.crossed_above(dataframe["high"],dataframe["line8"])) &  # below line9, and entry long
-                    (dataframe["volume"] > 0)  # Make sure Volume is not 0
-            ),
-            ["exit_long", "exit_tag"]] = (1, "exit_long9")
+            cond5,
+            ["exit_long", "exit_tag"]] = (1, "exit_long")
 
         dataframe.loc[
-            (
-                    (qtpylib.crossed_below(dataframe["low"],dataframe["line2"])) &  # below line9, and entry long
-                    (dataframe["volume"] > 0)  # Make sure Volume is not 0
-            ),
-            ["exit_short", "exit_tag"]] = (1, "exit_short1")
+            cond5,
+            ["exit_short", "exit_tag"]] = (1, "exit_short")
 
-        # Uncomment to use shorts (Only used in futures/margin mode. Check the documentation for more info)
-        """
-        dataframe.loc[
-            (
-                (qtpylib.crossed_above(dataframe["rsi"], self.buy_rsi.value)) &  # Signal: RSI crosses above buy_rsi
-                (dataframe["tema"] <= dataframe["bb_middleband"]) &  # Guard: tema below BB middle
-                (dataframe["tema"] > dataframe["tema"].shift(1)) &  # Guard: tema is raising
-                (dataframe['volume'] > 0)  # Make sure Volume is not 0
-            ),
-            'exit_short'] = 1
-        """
         return dataframe
+
+
+if __name__ == '__main__':
+    import pandas as pd
+    import numpy as np
+
+    # 创建一个模拟的 DataFrame
+    length = 100
+    data = {
+        'close': np.random.rand(length) * 100,
+        'open': np.random.rand(length) * 100,
+        'high': np.random.rand(length) * 100,
+        'low': np.random.rand(length) * 100,
+        'volume': np.random.rand(length) * 1000
+    }
+    df = pd.DataFrame(data)
+
+    myconfig = {} # 这里可以添加配置参数
+    # 创建策略实例
+    strategy = raindow(config=myconfig)
+
+    # 计算指标
+    df = strategy.populate_indicators(df.copy(), {})
+    print("带有指标的 DataFrame (尾部):")
+    print(df.tail())
+
+    # 生成买入信号
+    # buy_df = strategy.populate_buy_trend(df.copy(), {})
+    # print("\n带有买入信号的 DataFrame (前几个):")
+    # print(buy_df[buy_df['buy'] == 1].head())
+
+    # 生成卖出信号
+    # sell_df = strategy.populate_sell_trend(df.copy(), {})
+    # print("\n带有卖出信号的 DataFrame (前几个):")
+    # print(sell_df[sell_df['sell'] == 1].head())
