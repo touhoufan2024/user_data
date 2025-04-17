@@ -103,7 +103,7 @@ class raindow(IStrategy):
                 "line2": {"color": "red"},
                 "line3": {"color": "red"},
                 "line4": {"color": "red"},
-                "line5": {"color": "red"},
+                "line5": {"color": "yellow"},
                 "line6": {"color": "red"},
                 "line7": {"color": "red"},
                 "line8": {"color": "red"},
