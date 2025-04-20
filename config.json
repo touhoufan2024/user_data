@@ -9,6 +9,7 @@
     "dry_run": true,
     "dry_run_wallet": 1000,
     "cancel_open_orders_on_exit": false,
+    "position_adjustment_enable":true,
     "trading_mode": "futures",
     "margin_mode": "isolated",
     "unfilledtimeout": {
