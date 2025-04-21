@@ -123,6 +123,7 @@ class VolatilitySystem(IStrategy):
                               current_entry_rate: float, current_exit_rate: float,
                               current_entry_profit: float, current_exit_profit: float,
                               **kwargs) -> Optional[float]:
+        print(f'Adjusting position for {trade.pair} at {current_time} with profit {current_profit}')
         dataframe, _ = self.dp.get_analyzed_dataframe(trade.pair, self.timeframe)
         if len(dataframe) > 2:
             last_candle = dataframe.iloc[-1].squeeze()
