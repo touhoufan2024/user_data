@@ -151,7 +151,7 @@ class mini(IStrategy):
                 (qtpylib.crossed_above(dataframe["rsi"], self.buy_rsi.value)) &  # Signal: RSI crosses above buy_rsi
                 (dataframe["volume"] > 0)  # Make sure Volume is not 0
             ),
-            "enter_long"] = 1
+            ['enter_long', 'enter_tag']] = (1, 'rsi_cross')
         # Uncomment to use shorts (Only used in futures/margin mode. Check the documentation for more info)
         """
         dataframe.loc[
@@ -249,6 +249,7 @@ class mini(IStrategy):
             f"Entry Profit: {current_entry_profit:.2%}, "
             f"Exit Profit: {current_exit_profit:.2%}"
         )
+        print(trade.enter_tag)
         if trade.has_open_orders:
             # Only act if no orders are open
             return
@@ -289,3 +290,27 @@ class mini(IStrategy):
             return None
 
         return None
+    def leverage(
+        self,
+        pair: str,
+        current_time: datetime,
+        current_rate: float,
+        proposed_leverage: float,
+        max_leverage: float,
+        entry_tag: str | None,
+        side: str,
+        **kwargs,
+    ) -> float:
+        """
+        Customize leverage for each new trade. This method is only called in futures mode.
+
+        :param pair: Pair that's currently analyzed
+        :param current_time: datetime object, containing the current datetime
+        :param current_rate: Rate, calculated based on pricing settings in exit_pricing.
+        :param proposed_leverage: A leverage proposed by the bot.
+        :param max_leverage: Max leverage allowed on this pair
+        :param entry_tag: Optional entry_tag (buy_tag) if provided with the buy signal.
+        :param side: 'long' or 'short' - indicating the direction of the proposed trade
+        :return: A leverage amount, which is between 1.0 and max_leverage.
+        """
+        return 3.0
