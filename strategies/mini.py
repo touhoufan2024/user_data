@@ -151,7 +151,7 @@ class mini(IStrategy):
                 (qtpylib.crossed_above(dataframe["rsi"], self.buy_rsi.value)) &  # Signal: RSI crosses above buy_rsi
                 (dataframe["volume"] > 0)  # Make sure Volume is not 0
             ),
-            ['enter_long', 'enter_tag']] = (1, 'rsi_cross')
+            ['enter_long', 'enter_tag']] = (1, 'rsi_cross')  # Set entry tag to 'rsi_cross'
         # Uncomment to use shorts (Only used in futures/margin mode. Check the documentation for more info)
         """
         dataframe.loc[
