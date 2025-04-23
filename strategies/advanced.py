@@ -433,6 +433,10 @@ class advanced(IStrategy):
         :param current_time: datetime object, containing the current datetime
         :param **kwargs: Ensure to keep this here so updates to this won't break your strategy.
         """
+        # logger.info("*************************")
+        # logger.info("  Bot loop start")
+        # logger.info("  Current time: %s", current_time)
+        # logger.info("*************************")
         pass
 
     def custom_entry_price(
@@ -460,6 +464,14 @@ class advanced(IStrategy):
         :param **kwargs: Ensure to keep this here so updates to this won't break your strategy.
         :return float: New entry price value if provided
         """
+        # logger.info(f"***********************")
+        # logger.info(f"  pair: {pair}")
+        # logger.info(f"  trade: {trade}")
+        # logger.info(f"  current_time: {current_time}")
+        # logger.info(f"  proposed_rate: {proposed_rate}")
+        # logger.info(f"  entry_tag: {entry_tag}")
+        # logger.info(f"  side: {side}")
+        # logger.info(f"***********************")
         return proposed_rate
 
     def adjust_order_price(
@@ -654,17 +666,18 @@ class advanced(IStrategy):
         :return bool: When True is returned, then the buy-order is placed on the exchange.
             False aborts the process
         """
-        logger.info(f"***********************")
-        logger.info(f"  pair: {pair}")
-        logger.info(f"  order_type: {order_type}")
-        logger.info(f"  amount: {amount}")
-        logger.info(f"  rate: {rate}")
-        logger.info(f"  time_in_force: {time_in_force}")
-        logger.info(f"  current_time: {current_time}")
-        logger.info(f"  entry_tag: {entry_tag}")
-        logger.info(f"  side: {side}")
-        logger.info(f"***********************")
-        if 
+        # logger.info(f"***********************")
+        # logger.info(f"  pair: {pair}")
+        # logger.info(f"  order_type: {order_type}")
+        # logger.info(f"  amount: {amount}")
+        # logger.info(f"  rate: {rate}")
+        # logger.info(f"  time_in_force: {time_in_force}")
+        # logger.info(f"  current_time: {current_time}")
+        # logger.info(f"  entry_tag: {entry_tag}")
+        # logger.info(f"  side: {side}")
+        # logger.info(f"***********************")
+        # if side == 'long':
+        #     return False
         return True
 
     def confirm_trade_exit(
@@ -703,6 +716,18 @@ class advanced(IStrategy):
         :return bool: When True, then the exit-order is placed on the exchange.
             False aborts the process
         """
+        # logger.info(f"***********************")
+        # logger.info(f"  pair: {pair}")
+        # logger.info(f"  trade: {trade}")
+        # logger.info(f"  order_type: {order_type}")
+        # logger.info(f"  amount: {amount}")
+        # logger.info(f"  rate: {rate}")
+        # logger.info(f"  time_in_force: {time_in_force}")
+        # logger.info(f"  exit_reason: {exit_reason}")
+        # logger.info(f"  current_time: {current_time}")
+        # logger.info(f"***********************")
+        # if not trade.is_short:
+        #     return False
         return True
 
     def check_entry_timeout(
