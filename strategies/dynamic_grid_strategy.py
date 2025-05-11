@@ -10,16 +10,36 @@ class DynamicGridWeightStrategy(IStrategy):
     """
 
     # 配置策略参数
-    minimal_roi = {"0": 0.02}  # 固定收益
-    stoploss = -0.1           # 最大止损 10%
+    minimal_roi = {"0": 0.04}  # 固定收益
+    stoploss = -0.02           # 最大止损 10%
     timeframe = '1h'          # 时间周期为 1 小时
 
     # 定义超参数范围（供 Hyperopt 优化使用）
     grid_size = IntParameter(3, 10, default=5, space="buy", optimize=True)  # 网格数量（上下各 3~10 个）
     atr_multiplier = DecimalParameter(0.5, 3.0, default=1.5, space="buy", optimize=True)  # ATR 倍数
+    atr_period = DecimalParameter(5, 100, default=14, space="atr", optimize=True)  # ATR 计算周期
     ma_type = CategoricalParameter(["ema", "sma"], default="ema", space="buy", optimize=True)  # 均线类型
     ma_period = IntParameter(20, 100, default=50, space="buy", optimize=True)  # 均线周期
     weight_mode = CategoricalParameter(["linear", "exponential"], default="linear", space="buy", optimize=True)  # 权重模式
+
+    # 初始化时设置绘图配置
+    def __init__(self, config: dict) -> None:
+        super().__init__(config)
+        self.plot_config = {
+            'main_plot': {
+                'mid_line': {'color': 'blue'},  # 中间均线
+            },
+            'subplots': {
+                "ATR": {
+                    'atr': {'color': 'orange'},  # ATR 值曲线
+                },
+            },
+        }
+        # 确保网格线绘制配置在初始化时写入
+        for i in range(1, self.grid_size.value + 1):  # 注意这里使用 `grid_size.upper`获取最大网格值
+            self.plot_config['main_plot'][f"grid_upper_{i}"] = {'color': 'green'}
+            self.plot_config['main_plot'][f"grid_lower_{i}"] = {'color': 'red'}
+
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         """
@@ -32,7 +52,7 @@ class DynamicGridWeightStrategy(IStrategy):
             dataframe["mid_line"] = sma(dataframe["close"], self.ma_period.value)
 
         # 计算 ATR，作为动态间距的基础
-        dataframe["atr"] = atr(dataframe, 14)
+        dataframe["atr"] = atr(dataframe, self.atr_period.value)
 
         # 生成上下网格
         for i in range(1, self.grid_size.value + 1):
@@ -42,7 +62,9 @@ class DynamicGridWeightStrategy(IStrategy):
             # 初始化触发状态为 False
             dataframe[f"triggered_upper_{i}"] = False
             dataframe[f"triggered_lower_{i}"] = False
-
+            # 添加到 `plot_config` 中，确保线条显示在主图
+            self.plot_config['main_plot'][f"grid_upper_{i}"] = {'color': 'green'}
+            self.plot_config['main_plot'][f"grid_lower_{i}"] = {'color': 'red'}
             # 计算网格权重
             if self.weight_mode.value == "linear":
                 # 线性权重分配
