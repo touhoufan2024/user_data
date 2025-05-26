@@ -37,8 +37,8 @@ class mytest(IStrategy):
     ma_period = IntParameter(20, 100, default=50, space="buy", optimize=True)
     atr_multiplier = DecimalParameter(0.5, 3.0, default=1.5, space="buy", optimize=True)
     atr_period = DecimalParameter(5, 100, default=14, space="atr", optimize=True)
-    minimal_roi = {"60": 0.01, "30": 0.02, "0": 0.04}
-    stoploss = -0.10
+    minimal_roi = {"60": 0.05, "30": 0.1, "0": 0.1}
+    stoploss = -0.05
     trailing_stop = False
     process_only_new_candles = True
     use_exit_signal = True
@@ -109,11 +109,18 @@ class mytest(IStrategy):
         side: str,
         **kwargs,
     ) -> float:
-        logger.info(
-            f"custom_stake_amount called with: pair={pair}, current_time={current_time}, "
-            f"current_rate={current_rate}, proposed_stake={proposed_stake}, min_stake={min_stake}, "
-            f"max_stake={max_stake}, leverage={leverage}, entry_tag={entry_tag}, side={side}, kwargs={kwargs}"
-        )
+        num_str = entry_tag[-1] if entry_tag else '0'
+        num = int(num_str) if num_str.isdigit() else 0
+        num_delta = (self.grid_size.value - num) * 0.1
+        proposed_stake = proposed_stake * (1 - num_delta) * 2
+        # print(f"num: {num}, num_delta: {num_delta}, proposed_stake: {proposed_stake}")
+        # logger.info(
+        #     f"custom_stake_amount called with: pair={pair}, current_time={current_time}, "
+        #     f"current_rate={current_rate}, proposed_stake={proposed_stake}, min_stake={min_stake}, "
+        #     f"max_stake={max_stake}, leverage={leverage}, entry_tag={entry_tag}, side={side}, kwargs={kwargs}"
+        # )
+        
+
         return proposed_stake
 
     # useless functions
