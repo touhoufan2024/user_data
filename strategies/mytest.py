@@ -89,7 +89,7 @@ class mytest(IStrategy):
                 (dataframe['close'] > dataframe['mid_line'])
             )
             dataframe.loc[
-                cond_short, ['enter_short', 'entry_tag']] = (1, f'grid_short{i}')
+                cond_short, ['enter_short', 'enter_tag']] = (1, f'grid_short{i}')
         return dataframe
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
