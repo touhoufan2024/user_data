@@ -58,7 +58,7 @@ def test(name):
     run_cmd(cmd)
 
 def download():
-    cmd = "freqtrade download-data {0} --timeframe 5m 15m 30m 1h 2h --timerange=20240101-".format(common)
+    cmd = "freqtrade download-data {0} --timeframe 5m 15m 30m 1h 2h --timerange=20170101-  --exchange binance --prepend ".format(common)
     run_cmd(cmd)
     update_data_git_repository()
 
@@ -71,6 +71,10 @@ def main():
     parser = argparse.ArgumentParser(description="A script to execute commands based on input parameters.")
 
     # 添加参数
+    parser.add_argument("-d", "--download", action="store_true", help="download")
+
+
+
     parser.add_argument("-n", "--name", type=str, help="Provide a name to greet")
     parser.add_argument("-c", "--command", type=str, help="Provide a command to execute")
     parser.add_argument("-a", "--add", nargs=2, type=int, metavar=("A", "B"),
@@ -78,7 +82,6 @@ def main():
 
     parser.add_argument("--greet", action="store_true", help="Greet the world")
     # parser.add_argument("-t", "--test", action="store_true", help="backtest")
-    parser.add_argument("-d", "--download", action="store_true", help="download")
     parser.add_argument("-w", "--webserver", action="store_true", help="webserver")
     parser.add_argument("-l", "--list", action="store_true", help="list")
 
@@ -88,7 +91,6 @@ def main():
 
     switch_to_script_directory()
     # source
-    os.system("source ../..//.venv/bin/activate")
     os.system("export https_proxy=http://127.0.0.1:2080 http_proxy=http://127.0.0.1:2080 all_proxy=socks5://127.0.0.1:2080")
 
     # 解析参数
