@@ -40,7 +40,9 @@
         "secret": "",
         "ccxt_config": {
             "httpsProxy": "http://127.0.0.1:10808",
-            "wsProxy": "http://127.0.0.1:10808"
+            "wsProxy": "http://127.0.0.1:10808",
+            "enableRateLimit": true,
+            // "rateLimit": 100
          },
         "ccxt_async_config": {},
         "pair_whitelist": [
