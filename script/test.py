@@ -58,7 +58,7 @@ def test(name):
     run_cmd(cmd)
 
 def download():
-    cmd = "freqtrade download-data {0} --timeframe 5m 15m 30m 1h 2h --timerange=20170101-  --exchange binance --prepend ".format(common)
+    cmd = "freqtrade download-data {0} --timerange 20200101- -t 1m 5m 15m 30m 1h 2h 4h 8h  --exchange binance -p BTC/USDT:USDT --prepend ".format(common)
     run_cmd(cmd)
     update_data_git_repository()
 
