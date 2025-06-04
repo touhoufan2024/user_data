@@ -5,6 +5,12 @@ import subprocess
 # freqtrade backtesting --userdir ../ --config ../config.json --strategy raindow --timeframe 5m --timerange=20240101-
 # freqtrade download-data  --userdir ../ --config ../config.json  --timerange 20220101- -t 5m 15m 30m
 
+y2019 = "20190101-20191231"
+y2020 = "20200101-20201231"
+y2021 = "20210101-20211231"
+y2022 = "20220101-20221231"
+y2023 = "20230101-20231231"
+y2024 = "20240101-20241231"
 
 # const
 user_data = "../"
@@ -66,12 +72,17 @@ def list():
     cmd = "freqtrade list-strategies {0}".format(common)
     run_cmd(cmd)
 
+def backtest():
+    cmd = "freqtrade backtesting {0} --strategy mytest --timeframe 1h --timerange={1}".format(common, y2020)
+    run_cmd(cmd)
+
 def main():
     # 创建解析器
     parser = argparse.ArgumentParser(description="A script to execute commands based on input parameters.")
 
     # 添加参数
     parser.add_argument("-d", "--download", action="store_true", help="download")
+    parser.add_argument("-b", "--backtesting", action="store_true", help="backtest")
 
 
 
@@ -107,6 +118,9 @@ def main():
 
     if args.list:
         list()
+
+    if args.backtesting:
+        backtest()
 
 if __name__ == "__main__":
     main()
