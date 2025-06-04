@@ -33,7 +33,7 @@ class mytest(IStrategy):
     timeframe = "1h"
     can_short: bool = True
     position_adjustment_enable = True
-    grid_size = IntParameter(3, 10, default=5, space="buy", optimize=True)
+    grid_size = IntParameter(3, 10, default=5, space="buy", optimize=False)
     ma_period = IntParameter(20, 100, default=50, space="buy", optimize=True)
     atr_multiplier = DecimalParameter(0.5, 3.0, default=1.5, space="buy", optimize=True)
     atr_period = DecimalParameter(5, 100, default=14, space="atr", optimize=True)
