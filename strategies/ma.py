@@ -88,22 +88,22 @@ class ma(IStrategy):
     INTERFACE_VERSION = 3
 
     # Optimal timeframe for the strategy.
-    timeframe = "5m"
+    timeframe = "1h"
 
     # Can this strategy go short?
-    can_short: bool = False
+    can_short: bool = True
 
     # Minimal ROI designed for the strategy.
     # This attribute will be overridden if the config file contains "minimal_roi".
     minimal_roi = {
-        "60": 0.01,
-        "30": 0.02,
-        "0": 0.04
+        "60": 0.03,
+        "30": 0.04,
+        "0": 0.06
     }
 
     # Optimal stoploss designed for the strategy.
     # This attribute will be overridden if the config file contains "stoploss".
-    stoploss = -0.10
+    stoploss = -0.03
 
     # Trailing stoploss
     trailing_stop = False
@@ -179,8 +179,7 @@ class ma(IStrategy):
         price_cond_long = (dataframe['close'] < dataframe['ema']) & \
             (((dataframe['ema'] - dataframe['close']) / dataframe['ema']) >= self.price_delta.value)
 
-        rsi_cond_long = (dataframe['rsi'].shift(1) < self.buy_rsi.value) & \
-            (dataframe['rsi'] >= self.buy_rsi.value)
+        rsi_cond_long = qtpylib.crossed_above(dataframe['rsi'], self.buy_rsi.value)
 
         cond_long = (
             price_cond_long &
@@ -192,8 +191,7 @@ class ma(IStrategy):
         # short
         price_cond_short = (dataframe['close'] > dataframe['ema']) & \
             (((dataframe['close'] - dataframe['ema']) / dataframe['ema']) >= self.price_delta.value)
-        rsi_cond_short = (dataframe['rsi'].shift(1) > self.sell_rsi.value) & \
-            (dataframe['rsi'] <= self.sell_rsi.value)
+        rsi_cond_short = qtpylib.crossed_below(dataframe['rsi'], self.sell_rsi.value)
         cond_short = (
             price_cond_short &
             rsi_cond_short
@@ -203,4 +201,18 @@ class ma(IStrategy):
         return dataframe
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+        cond_long_exit = (
+            qtpylib.crossed_above(dataframe['close'], dataframe['ema'])
+        )
+        dataframe.loc[
+            cond_long_exit, ['exit_long', 'exit_tag']] = (1, 'long_exit')
+
+        cond_short_exit = (
+            qtpylib.crossed_below(dataframe['close'], dataframe['ema'])
+        )
+        dataframe.loc[
+            cond_short_exit, ['exit_short', 'exit_tag']] = (1, 'short_exit')
+
+
+
         return dataframe
