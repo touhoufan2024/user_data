@@ -8,6 +8,51 @@ from datetime import datetime, timedelta, timezone
 from pandas import DataFrame
 from typing import Dict, Optional, Union, Tuple
 
+"""
+均值回归策略, 基于价格偏离度和动能反转的交易系统
+
+需要的指标
+    长期均线： EMA(50)
+    震荡指标： RSI(14)
+    波动率指标： ATR(14)
+
+其余参数
+    偏离度阈值： 2% (价格比EMA50低/高至少2%)
+    ATR止损乘数： 2.0 (即2倍ATR止损)
+
+做多
+    价格偏离： 当前价格 低于 EMA(50)，且 (EMA(50) - Close) / EMA(50) ≥ 2%。
+    动能反转： RSI(14) 从30以下超卖区 向上突破30。
+    仓位： 根据价格偏离EMA(50)的程度动态调整仓位，偏离越大仓位越大（在最大风险承受范围内）。
+
+多单止损
+    动态止损： 止损价 = 入场价 - ATR(14) * 2.0。
+    或 趋势逆转： 价格跌破入场K线最低点，或重新跌破EMA(50)并收盘其下方。
+    或 最大亏损： 单笔亏损达到账户资金的某个百分比
+
+多单止盈
+    目标均线止盈（主要）： 价格 向上触及或突破EMA(50) 时，平仓大部分仓位（如80%）。
+    追踪止盈（剩余仓位）： 剩余小部分仓位采用追踪止损 最高价 - ATR(14) * 1.0。
+    固定盈亏比： 盈利达到止损的1.5倍或2倍时平仓。
+
+做空
+    价格偏离： 当前价格 高于 EMA(50)，且 (Close - EMA(50)) / EMA(50) ≥ 2%。
+    动能反转： RSI(14) 从70以上超买区 向下突破70。
+    仓位： 根据价格偏离EMA(50)的程度动态调整仓位，偏离越大仓位越大（在最大风险承受范围内）。
+
+空单止损（必设）：
+    动态止损： 止损价 = 入场价 + ATR(14) * 2.0。
+    或 趋势逆转： 价格突破入场K线最高点，或重新突破EMA(50)并收盘其上方。
+    或 最大亏损： 单笔亏损达到账户资金的某个百分比。
+
+空单止盈（锁定利润）：
+    目标均线止盈（主要）： 价格 向下触及或跌破EMA(50) 时，平仓大部分仓位（如80%）。
+    追踪止盈（剩余仓位）： 剩余小部分仓位采用追踪止损 最低价 + ATR(14) * 1.0。
+    或 固定盈亏比： 盈利达到止损的1.5倍或2倍时平仓。
+"""
+
+
+
 from freqtrade.strategy import (
     IStrategy,
     Trade,
@@ -38,22 +83,6 @@ from technical import qtpylib
 
 
 class ma(IStrategy):
-    """
-    This is a strategy template to get you started.
-    More information in https://www.freqtrade.io/en/latest/strategy-customization/
-
-    You can:
-        :return: a Dataframe with all mandatory indicators for the strategies
-    - Rename the class name (Do not forget to update class_name)
-    - Add any methods you want to build your strategy
-    - Add any lib you need to build your strategy
-
-    You must keep:
-    - the lib in the section "Do not remove these libs"
-    - the methods: populate_indicators, populate_entry_trend, populate_exit_trend
-    You should keep:
-    - timeframe, minimal_roi, stoploss, trailing_*
-    """
     # Strategy interface version - allow new iterations of the strategy interface.
     # Check the documentation or the Sample strategy to get the latest version.
     INTERFACE_VERSION = 3
@@ -133,16 +162,6 @@ class ma(IStrategy):
         }
 
     def informative_pairs(self):
-        """
-        Define additional, informative pair/interval combinations to be cached from the exchange.
-        These pair/interval combinations are non-tradeable, unless they are part
-        of the whitelist as well.
-        For more information, please consult the documentation
-        :return: List of tuples in the format (pair, interval)
-            Sample: return [("ETH/USDT", "5m"),
-                            ("BTC/USDT", "15m"),
-                            ]
-        """
         return []
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
